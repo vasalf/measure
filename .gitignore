@@ -11,5 +11,6 @@ CTestTestfile.cmake
 _deps
 .cache/**
 
-01-lcg-random
+01-lcg-random-no-unroll
+01-lcg-random-unroll
 
