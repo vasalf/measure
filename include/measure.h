@@ -120,6 +120,23 @@ auto measure(F &&f) {
         )
     };
 
+    perf_event_attr cycles_attr{
+        .type = PERF_TYPE_HARDWARE,
+        .size = sizeof(perf_event_attr),
+        .config = PERF_COUNT_HW_CPU_CYCLES,
+        .exclude_kernel = 1,
+        .exclude_hv = 1,
+    };
+
+    detail::fd_holder cycles_fd{
+        static_cast<int>(
+            detail::check_syscall_result(
+                "perf_event_open",
+                ::syscall(SYS_perf_event_open, &cycles_attr, static_cast<pid_t>(0), -1, grp_fd.fd, 0ul)
+            )
+        )
+    };
+
     detail::check_syscall_result("ioctl", ::ioctl(grp_fd.fd, PERF_EVENT_IOC_ENABLE, 0));
     auto ret = f();
     detail::check_syscall_result("ioctl", ::ioctl(grp_fd.fd, PERF_EVENT_IOC_DISABLE, 0));
@@ -127,20 +144,26 @@ auto measure(F &&f) {
     struct {
         std::uint64_t nr;
         std::uint64_t time_running;
-        std::uint64_t counters[1];
+        std::uint64_t counters[2];
     } result;
     std::size_t read = detail::check_syscall_result("read", ::read(grp_fd.fd, &result, sizeof(result)));
     assert(read == sizeof(result));
 
-    assert(result.nr == 1);
+    assert(result.nr == 2);
     auto time_running = result.time_running;
     auto cpu_instrs = result.counters[0];
+    auto cpu_cycles = result.counters[1];
     double avg_instr_time = static_cast<double>(time_running) / cpu_instrs;
+    double avg_cycle_time = static_cast<double>(time_running) / cpu_cycles;
+    double avg_instrs_per_cycle = static_cast<double>(cpu_instrs) / cpu_cycles;
 
     std::wcerr << "=========== MEASURE REPORT ===========" << std::endl;
     std::wcerr << "Time running: " << detail::format_time(time_running) << std::endl;
     std::wcerr << "CPU instructions: " << cpu_instrs << std::endl;
+    std::wcerr << "CPU cycles: " << cpu_cycles << std::endl;
     std::wcerr << "Avg instruction time: " << detail::format_time(avg_instr_time) << std::endl;
+    std::wcerr << "Avg cycle time: " << detail::format_time(avg_cycle_time) << std::endl;
+    std::wcerr << "Avg intsructions per cycle: " << avg_instrs_per_cycle << std::endl;
     std::wcerr << "======================================" << std::endl << std::endl;
 
     return ret;
