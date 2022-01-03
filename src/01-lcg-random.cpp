@@ -25,24 +25,22 @@
 
 int main() {
     std::uint32_t u32_ret = measure::measure(
-        []() {
+        [seed = static_cast<std::uint32_t>(57)]() mutable {
             std::uint32_t a = 179;
             std::uint32_t b = 239;
-            std::uint32_t seed = 57;
             for (std::uint32_t i = 0; i < 100'000'000; i++) {
                 seed = seed * a + b;
             }
             return seed;
         },
-        measure::config{.name = L"32-bit integers", .warmups = 10}
+        measure::config{.name = L"32-bit integers", .warmups = 5}
     );
     std::cout << u32_ret << std::endl;
 
     std::uint64_t u64_ret = measure::measure(
-        [](){
+        [seed = static_cast<std::uint64_t>(57)]() mutable {
             std::uint64_t a = 179;
             std::uint64_t b = 239;
-            std::uint64_t seed = 57;
             for (std::uint32_t i = 0; i < 100'000'000; i++) {
                 seed = seed * a + b;
             }

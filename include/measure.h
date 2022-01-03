@@ -70,15 +70,13 @@ struct fd_holder {
     }
 };
 
+namespace {
 struct locale_setter {
     locale_setter() {
-        static bool set = false;
-        if (!set) {
-            std::locale::global(std::locale(""));
-            set = true;
-        }
+        std::locale::global(std::locale(""));
     }
 } locale_setter_instance;
+}
 
 template<typename T>
 inline std::wstring format_time(T ns) {
