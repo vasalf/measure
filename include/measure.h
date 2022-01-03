@@ -27,13 +27,14 @@
 #include <cassert>
 #include <cstring>
 #include <locale>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
 
 #include <linux/perf_event.h>
-#include <sys/syscall.h>
 #include <sys/ioctl.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 namespace measure {
@@ -99,8 +100,13 @@ inline std::wstring format_time(T ns) {
 
 }
 
+struct config {
+    std::optional<std::wstring_view> name{};
+    std::uint64_t warmups = 0;
+};
+
 template <typename F>
-auto measure(F &&f) {
+auto measure(F &&f, const config& cfg = {}) {
     perf_event_attr instrs_attr{
         .type = PERF_TYPE_HARDWARE,
         .size = sizeof(perf_event_attr),
@@ -137,6 +143,12 @@ auto measure(F &&f) {
         )
     };
 
+    if (cfg.warmups) {
+        for (std::uint64_t i = 0; i < cfg.warmups; i++) {
+            f();
+        }
+    }
+
     detail::check_syscall_result("ioctl", ::ioctl(grp_fd.fd, PERF_EVENT_IOC_ENABLE, 0));
     auto ret = f();
     detail::check_syscall_result("ioctl", ::ioctl(grp_fd.fd, PERF_EVENT_IOC_DISABLE, 0));
@@ -158,6 +170,9 @@ auto measure(F &&f) {
     double avg_instrs_per_cycle = static_cast<double>(cpu_instrs) / cpu_cycles;
 
     std::wcerr << "=========== MEASURE REPORT ===========" << std::endl;
+    if (cfg.name) {
+        std::wcerr << "Name: " << *cfg.name << std::endl;
+    }
     std::wcerr << "Time running: " << detail::format_time(time_running) << std::endl;
     std::wcerr << "CPU instructions: " << cpu_instrs << std::endl;
     std::wcerr << "CPU cycles: " << cpu_cycles << std::endl;
