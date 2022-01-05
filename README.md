@@ -1,23 +1,23 @@
 # Общее
 
 1. Разрешить непривелигерованному пользователю считать метрики:
-```bash
-sudo sysctl kernel.perf_event_paranoid=2
-```
+    ```bash
+    sudo sysctl kernel.perf_event_paranoid=2
+    ```
 1. Стабилизация результатов.
-   Надо выделить отдельный процессор (скажем, 7) и запускаться только на нём. Мешаются CPU Scaling и шедулер.
-   1. Выставляем cpu7 на максимальную частоту:
-   ```bash
-   sudo cpupower -c 7 frequency-set -g performance
-   ```
-   1. Создаём shield на седьмом процессоре, чтобы туда никто не залезал
-   ```bash
-   sudo cset shield --cpu 7 --kthread=on
-   ```
-   1. Запускаем пример внутри shield
-   ```bash
-   sudo cset shield --exec ./01-lcg-random-no-unroll
-   ```
+    Надо выделить отдельный процессор (скажем, 7) и запускаться только на нём. Мешаются CPU Scaling и шедулер.
+    1. Выставляем cpu7 на максимальную частоту:
+        ```bash
+        sudo cpupower -c 7 frequency-set -g performance
+        ```
+    1. Создаём shield на седьмом процессоре, чтобы туда никто не залезал
+        ```bash
+        sudo cset shield --cpu 7 --kthread=on
+        ```
+    1. Запускаем пример внутри shield
+        ```bash
+        sudo cset shield --exec ./01-lcg-random-no-unroll
+        ```
 1. Кажется, у CMake есть баг: когда меняешь компилятор, надо запускаться два раза.
 
 # Частное
