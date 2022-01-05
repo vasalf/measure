@@ -28,12 +28,12 @@ int main() {
         [seed = static_cast<std::uint32_t>(57)]() mutable {
             std::uint32_t a = 179;
             std::uint32_t b = 239;
-            for (std::uint32_t i = 0; i < 100'000'000; i++) {
+            for (std::uint32_t i = 0; i < 1'000'000; i++) {
                 seed = seed * a + b;
             }
             return seed;
         },
-        measure::config{.name = L"32-bit integers", .warmups = 5}
+        measure::config{.name = L"32-bit integers"}
     );
     std::cout << u32_ret << std::endl;
 
@@ -41,7 +41,7 @@ int main() {
         [seed = static_cast<std::uint64_t>(57)]() mutable {
             std::uint64_t a = 179;
             std::uint64_t b = 239;
-            for (std::uint32_t i = 0; i < 100'000'000; i++) {
+            for (std::uint32_t i = 0; i < 1'000'000; i++) {
                 seed = seed * a + b;
             }
             return seed;

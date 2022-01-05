@@ -13,4 +13,5 @@ _deps
 
 01-lcg-random-no-unroll
 01-lcg-random-unroll
+02-lcg-random-mod
 
